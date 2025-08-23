@@ -4,8 +4,8 @@ export type TimeSpanType = 'paused' | 'running';
 
 export class TimeSpan {
     type: TimeSpanType;
-    start: number;
-    end: number;
+    readonly start: number;
+    readonly end: number;
 
     constructor(type: TimeSpanType, start: number, end: number) {
         this.type = type;
@@ -21,10 +21,17 @@ export class TimeSpan {
 export class Task {
     name: string;
     spans: TimeSpan[];
+    color: string;
 
     constructor(name: string) {
         this.name = name;
         this.spans = [];
+        let hash = 0;
+        for (let i = 0; i < name.length; i++) {
+            hash = name.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        const h = hash % 360;
+        this.color = `hsl(${h}, 80%, 50%)`;
     }
 
     addSpan(span: TimeSpan) {

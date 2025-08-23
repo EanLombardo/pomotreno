@@ -14,6 +14,7 @@ import { defineComponent, ref, computed } from 'vue';
 import Card from 'primevue/card';
 import Chart from 'primevue/chart';
 import { db } from '@/db';
+import { formatDuration } from '@/utils';
 
 export default defineComponent({
   name: 'PieReport',
@@ -29,6 +30,7 @@ export default defineComponent({
     });
 
     const chartOptions = ref({
+      animations: false,
       plugins: {
         legend: {
           position: 'top',
@@ -44,16 +46,6 @@ export default defineComponent({
       },
     });
 
-    function getUniqueColor(n : number) : string {
-      const rgb = [0, 0, 0];
-      for (let i = 0; i < 24; i++) {
-          rgb[i%3] <<= 1;
-          rgb[i%3] |= n & 0x01;
-          n >>= 1;
-      }
-      return '#' + rgb.reduce((a, c) => (c > 0x0f ? c.toString(16) : '0' + c.toString(16)) + a, '');
-    }
-
     const chartData = computed<object>(() => {
       const labels = db.tasks.value.map(task => task.name);
       const data = db.tasks.value.map(task => task.unpausedDuration);
@@ -62,36 +54,12 @@ export default defineComponent({
         datasets: [{
           label: 'Total Duration',
           data,
-          backgroundColor: labels.map((_, i) => getUniqueColor(i + 1)),
+          backgroundColor: db.tasks.value.map(task => task.color),
           borderColor: 'black',
-          borderWidth: 1
+          borderWidth: 1,
         }]
       };
     });
-
-    function formatDuration(duration: number): string {
-      duration = duration / 1000;
-      const hours = Math.floor(duration / 3600);
-      const minutes = Math.floor((duration % 3600) / 60);
-      const seconds = Math.floor(duration % 60);
-
-      const segments :string[] = [];
-      if (hours) {
-        segments.push(`${hours}h`);
-      }
-      if (minutes) {
-        segments.push(`${minutes}m`);
-      }
-      if (seconds) {
-        segments.push(`${seconds}s`);
-      }
-
-      if(segments.length === 0) {
-        return '0s';
-      } else {
-        return segments.join(' ');
-      }
-    }
 
     return {
       fullTotalDuration,

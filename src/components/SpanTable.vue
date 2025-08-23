@@ -31,6 +31,7 @@ import Card from 'primevue/card';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import { db } from '@/db';
+import { formatDuration } from '@/utils';
 
 export default defineComponent({
   name: 'SpanTable',
@@ -40,30 +41,6 @@ export default defineComponent({
     Column,
   },
   setup() {
-    function formatDuration(duration: number): string {
-      duration = duration / 1000;
-      const hours = Math.floor(duration / 3600);
-      const minutes = Math.floor((duration % 3600) / 60);
-      const seconds = Math.floor(duration % 60);
-
-      const segments :string[] = [];
-      if (hours) {
-        segments.push(`${hours}h`);
-      }
-      if (minutes) {
-        segments.push(`${minutes}m`);
-      }
-      if (seconds) {
-        segments.push(`${seconds}s`);
-      }
-
-      if(segments.length === 0) {
-        return '0s';
-      } else {
-        return segments.join(' ');
-      }
-    }
-
     return {
       spans: db.spans,
       formatDuration,
