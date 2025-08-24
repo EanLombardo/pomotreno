@@ -1,4 +1,5 @@
 import { computed, ref } from 'vue';
+import { colorForName } from './utils';
 
 export type TimeSpanType = 'paused' | 'running';
 
@@ -26,12 +27,7 @@ export class Task {
     constructor(name: string) {
         this.name = name;
         this.spans = [];
-        let hash = 0;
-        for (let i = 0; i < name.length; i++) {
-            hash = name.charCodeAt(i) + ((hash << 5) - hash);
-        }
-        const h = hash % 360;
-        this.color = `hsl(${h}, 80%, 50%)`;
+        this.color = colorForName(name);
     }
 
     addSpan(span: TimeSpan) {
@@ -56,7 +52,7 @@ export class Task {
     }
 }
 
-type SpanModel = {
+export type SpanModel = {
     span : TimeSpan,
     task : Task,
 }

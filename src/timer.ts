@@ -19,7 +19,7 @@ addEventListener('beforeunload', async (event) => {
     await timer.pause();
     }
 });
-addEventListener('pagehide', async () => await stop());
+addEventListener('pagehide', async () => await timer.stop());
 
 export type State = "paused" | "running" | 'stopped' | 'finished';
 export type Mode = "countdown" | 'stopwatch';
@@ -53,9 +53,9 @@ export class timer {
           artist: 'Pomotreno'
         });
 
-        navigator.mediaSession.setActionHandler('play', this.pauseResume);
-        navigator.mediaSession.setActionHandler('pause', this.pauseResume);
-        navigator.mediaSession.setActionHandler('stop', this.stop);
+        navigator.mediaSession.setActionHandler('play', () => this.pauseResume());
+        navigator.mediaSession.setActionHandler('pause', () => this.pauseResume());
+        navigator.mediaSession.setActionHandler('stop', () => this.stop());
         navigator.mediaSession.playbackState = 'playing';
     }
 
@@ -90,7 +90,11 @@ export class timer {
         } else  if(this.state.value === "paused") {
            await db.addTimeSpan(this.timerName.value, new TimeSpan('paused', this.pauseTime.value, Date.now()));
         }
-        document.exitPictureInPicture();
+        try {
+            await document.exitPictureInPicture();
+        } catch (error) {
+            // Only happpens when already exited
+        }
         this.state.value = "stopped";
     }
 
