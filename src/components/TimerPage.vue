@@ -9,7 +9,7 @@
       <PieReport />
       <TaskTable />
     </div>
-    <SpanTable />
+    <Timeline />
   </div>
 </template>
 
@@ -20,7 +20,7 @@ import NewTimerCard from './NewTimerCard.vue';
 import ActiveTimerCard from './ActiveTimerCard.vue';
 import PieReport from './PieReport.vue';
 import TaskTable from './TaskTable.vue';
-import SpanTable from './SpanTable.vue';
+import Timeline from './Timeline.vue';
 
 export default defineComponent({
   name: 'TimerPage',
@@ -29,7 +29,7 @@ export default defineComponent({
     ActiveTimerCard,
     PieReport,
     TaskTable,
-    SpanTable,
+    Timeline,
   },
   setup() {
     function start({ name, type, duration }: { name: string, type: Mode, duration: number}) {
