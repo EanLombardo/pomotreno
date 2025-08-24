@@ -1,35 +1,32 @@
 <template>
-  <div>
-    <div class="flex justify-center items-center pt-4 text-5xl" id="header"><img width="64" height="64" src="/public/icon128.png" srcset="/public/icon.svg" class="pr-2"/>Pomotreno</div>
-    <div class="flex justify-center items-center pt-4">
-      <NewTimerCard v-if="state === 'stopped'" @start="start" />
-      <ActiveTimerCard v-show="state !== 'stopped'" />
+  <div class="flex">
+    <NewTimerDialog :visible="showNewTimerDialog" @start="start" @close="showNewTimerDialog = false" />
+    <Sidebar />
+    <div class="grow">
+      <div class="flex-grow p-2">
+        <component :is="currentView" />
+      </div>
     </div>
-    <div class="md:flex gap-4 pt-4">
-      <PieReport />
-      <TaskTable />
-    </div>
-    <Timeline />
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue';
 import { timer, Mode } from '@/timer';
-import NewTimerCard from './NewTimerCard.vue';
-import ActiveTimerCard from './ActiveTimerCard.vue';
-import PieReport from './PieReport.vue';
-import TaskTable from './TaskTable.vue';
+import NewTimerDialog from './NewTimerDialog.vue';
 import Timeline from './Timeline.vue';
+import Sidebar from './Sidebar.vue';
+import TaskPage from './TaskPage.vue';
+import { currentView } from '@/routing';
+import { showNewTimerDialog } from '@/dialog';
 
 export default defineComponent({
   name: 'TimerPage',
   components: {
-    NewTimerCard,
-    ActiveTimerCard,
-    PieReport,
-    TaskTable,
+    Sidebar,
+    NewTimerDialog,
     Timeline,
+    TaskPage,
   },
   setup() {
     function start({ name, type, duration }: { name: string, type: Mode, duration: number}) {
@@ -40,11 +37,14 @@ export default defineComponent({
       video.srcObject = stream;
       video.play();
       navigator.mediaSession.playbackState = 'playing';
+      showNewTimerDialog.value = false;
     }
 
     return {
       state: timer.state,
       start,
+      currentView,
+      showNewTimerDialog,
     };
   },
 });

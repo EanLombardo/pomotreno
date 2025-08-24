@@ -1,3 +1,10 @@
 @import "tailwindcss";
 @import "tailwindcss-primeui";
 @import 'primeicons/primeicons.css';
+
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}

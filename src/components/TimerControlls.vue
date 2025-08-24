@@ -1,20 +1,16 @@
-<template>
-  <Card class="col-span-2 shrink" v-show="state !== 'stopped'" id="active-timer-card">
-    <template #title>Active Timer</template>
-    <template #content>
-      <canvas id="timer-canvas" width="400" height="200"></canvas>
-      <div class="flex pt-2">
-        <Button icon="pi pi-play" v-if="state === 'paused'" @click="play" />
-        <Button icon="pi pi-pause" v-if="state === 'running'" @click="pause" />
-        <div class="flex-grow"></div>
-        <Button icon="pi pi-stop" @click="stopTimer" severity="danger"/>
-      </div>
-    </template>
-  </Card>
+<template v-if="state !== 'stopped'">
+  <div class="flex m-2" style="border: 1px solid var(--p-menu-border-color); border-radius: var(--p-menu-border-radius);">
+    <Button size="small" icon="pi pi-play" v-if="state === 'paused'" @click="play" style="flex-shrink: 0;"/>
+    <Button size="small" icon="pi pi-pause" v-if="state === 'running'" @click="pause" style="flex-shrink: 0;"/>
+    <div ref="marqueeTextContainer" class="flex-grow flex items-center justify-center text-lg" style="overflow: hidden; min-width: 0;">
+      <div ref="marqueeText" :class="{ 'animate-marquee': shouldAnimateMarquee }" class="marquee-text">{{ timerName }}</div>
+    </div>
+    <Button size="small" icon="pi pi-stop" @click="stopTimer" severity="danger" style="flex-shrink: 0;"/>
+  </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, onMounted, watch } from 'vue';
+<script lang="ts">  
+import { defineComponent, onMounted, watch, ref, nextTick, useTemplateRef } from 'vue';
 import Card from 'primevue/card';
 import Button from 'primevue/button';
 import { timer } from '@/timer';
@@ -29,16 +25,31 @@ export default defineComponent({
     let canvas!: HTMLCanvasElement;
     let ctx!: CanvasRenderingContext2D;
 
+    const marqueeText = useTemplateRef<HTMLElement | null>('marqueeText');
+    const marqueeTextContainer = useTemplateRef<HTMLElement | null>('marqueeTextContainer');
+    const shouldAnimateMarquee = ref(false);
+
+    const checkOverflow = () => {
+      if (marqueeText.value && marqueeTextContainer.value) {
+        shouldAnimateMarquee.value = marqueeText.value.scrollWidth > marqueeTextContainer.value.clientWidth;
+      }
+    };
+
     onMounted(() => {
       canvas = document.getElementById('timer-canvas') as HTMLCanvasElement;
       ctx = canvas.getContext('2d')!;
       draw();
+      nextTick(checkOverflow);
     });
 
     watch(() => timer.state.value, () => {
       if (timer.state.value !== 'stopped') {
         draw();
       }
+    });
+
+    watch(() => timer.timerName.value, () => {
+      nextTick(checkOverflow);
     });
 
     function draw(): void {
@@ -93,10 +104,30 @@ export default defineComponent({
 
     return {
       state: timer.state,
+      timerName: timer.timerName,
       play: () => timer.resume(),
       pause: () => timer.pause(),
       stopTimer: () => timer.stop(),
+      marqueeText,
+      shouldAnimateMarquee,
     };
   },
 });
 </script>
+
+<style scoped>
+.marquee-text {
+  white-space: nowrap;
+  display: flex;
+  overflow: hidden;
+}
+
+.animate-marquee {
+  animation: marquee 5s linear infinite;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+</style>

@@ -68,6 +68,10 @@ export class db {
         result.sort((a, b) => a.span.start - b.span.start);
         return result;
     });
+    static storageUsedBytes = ref(0)
+    static storageUsageRatio = computed(() => {
+        return this.storageUsedBytes.value / chrome.storage.sync.QUOTA_BYTES
+    });
 
     static async addTimeSpan(name : string, span: TimeSpan) {
         chrome.storage.sync.get('tasks', (result: { [key: string]: any; }) => {
@@ -105,10 +109,18 @@ export class db {
          chrome.storage.sync.get('tasks', (result: { [key: string]: any; }) => {
             this.populateInternal(result);
         });
+        this.populateStorageUsage()
+    }
+
+    static async populateStorageUsage() {
+        chrome.storage.sync.getBytesInUse(null, (bytesInUse) => {
+            this.storageUsedBytes.value = bytesInUse;
+        });
     }
 }
 
 chrome.storage.sync.onChanged.addListener((changes: { [key: string]: any }) => {
     db.populateInternal({tasks : changes.tasks.newValue});
+    db.populateStorageUsage();
 });
 db.populate();

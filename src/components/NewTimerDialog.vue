@@ -1,32 +1,32 @@
 <template>
-  <Card class="shrink" id="new-timer-card">
-    <template #title>New Timer</template>
-    <template #content>
-      <div class="grid grid-cols-1 gap-4">
-        <div class="col-span-1">
-          <FloatLabel variant="in">
-            <AutoComplete id="timer-name" v-model="timerName" :suggestions="filteredTimerNames" @complete="searchTimerNames" dropdown/>
-            <label for="timer-name">Timer Name</label>
-          </FloatLabel>
-        </div>
-        <SelectButton class="col-span-1 flex justify-center" v-model="timerType" :options="typeOptions" />
-        <div class="col-span-1 flex justify-center items-center" v-if="timerType === 'countdown'">
-          <InputNumber id="timer-hours" v-model="timerHours" showButtons buttonLayout="vertical" mode="decimal" :min="0" style="width: 3rem"/>
-          <span class="grow flex justify-center" style="font-size: 1rem;">h</span>
-          <InputNumber id="timer-minutes" v-model="timerMinutes" showButtons buttonLayout="vertical" mode="decimal" :min="0" :max="59" style="width: 3rem"/>
-          <span class="grow flex justify-center" style="font-size: 1rem;">m</span>
-          <InputNumber id="timer-seconds" v-model="timerSeconds" showButtons buttonLayout="vertical" mode="decimal" :min="0" :max="59" style="width: 3rem"/>
-          <span class="grow flex justify-center" style="font-size: 1rem;">s</span>
-        </div>
-        <Button class="col-span-1" label="Start" @click="start" />
+  <Dialog :visible="visible" @update:visible="$emit('close')" modal header="New Timer" :style="{ width: '25rem' }">
+    <div class="grid grid-cols-1 gap-4">
+      <div class="col-span-1">
+        <FloatLabel variant="in" class="w-full">
+          <AutoComplete class="w-full" id="timer-name" v-model="timerName" :suggestions="filteredTimerNames" @complete="searchTimerNames" dropdown/>
+          <label for="timer-name">Timer Name</label>
+        </FloatLabel>
       </div>
+      <SelectButton class="col-span-1 flex justify-center" v-model="timerType" :options="typeOptions" />
+      <div class="col-span-1 flex justify-center items-center" v-if="timerType === 'countdown'">
+        <InputNumber id="timer-hours" v-model="timerHours" showButtons buttonLayout="vertical" mode="decimal" :min="0" style="width: 3rem"/>
+        <span class="grow flex justify-center" style="font-size: 1rem;">h</span>
+        <InputNumber id="timer-minutes" v-model="timerMinutes" showButtons buttonLayout="vertical" mode="decimal" :min="0" :max="59" style="width: 3rem"/>
+        <span class="grow flex justify-center" style="font-size: 1rem;">m</span>
+        <InputNumber id="timer-seconds" v-model="timerSeconds" showButtons buttonLayout="vertical" mode="decimal" :min="0" :max="59" style="width: 3rem"/>
+        <span class="grow flex justify-center" style="font-size: 1rem;">s</span>
+      </div>
+    </div>
+    <template #footer>
+      <Button label="Cancel" @click="$emit('close')" text />
+      <Button label="Start" @click="start" />
     </template>
-  </Card>
+  </Dialog>
 </template>
 
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
-import Card from 'primevue/card';
+import Dialog from 'primevue/dialog';
 import Button from 'primevue/button';
 import SelectButton from 'primevue/selectbutton';
 import AutoComplete from 'primevue/autocomplete';
@@ -36,16 +36,22 @@ import { db } from '@/db';
 import { Mode } from '@/timer';
 
 export default defineComponent({
-  name: 'NewTimerCard',
+  name: 'NewTimerDialog',
   components: {
-    Card,
+    Dialog,
     Button,
     AutoComplete,
     InputNumber,
     SelectButton,
     FloatLabel,
   },
-  emits: ['start'],
+  props: {
+    visible: {
+      type: Boolean,
+      required: true,
+    },
+  },
+  emits: ['start', 'close'],
   setup(props, { emit }) {
     const timerName = ref('');
     const timerHours = ref(0);
@@ -76,6 +82,7 @@ export default defineComponent({
         type: timerType.value,
         duration: getDuration(),
       });
+      emit('close');
     }
 
     return {
