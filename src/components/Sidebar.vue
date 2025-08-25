@@ -30,7 +30,7 @@ export default defineComponent({
     Menu,
     TimerControlls,
   },
-    setup() {
+  setup() {
     const items = computed<MenuItem[]>(() => {
       const menuItems: MenuItem[] = [];
       if (timer.state.value === 'stopped') {
@@ -47,16 +47,16 @@ export default defineComponent({
         icon: 'pi pi-fw pi-chart-line',
         url: '#/timeline',
       },
-      {
-        label: 'Tasks',
-        icon: 'pi pi-fw pi-list',
-        url: '#/tasks'
-      });
+        {
+          label: 'Tasks',
+          icon: 'pi pi-fw pi-list',
+          url: '#/tasks'
+        });
       return menuItems;
     });
 
     const selectedIndex = computed(() => {
-      return items.value.findIndex(item => item.url == '#' +currentPath.value);
+      return items.value.findIndex(item => item.url == '#' + currentPath.value);
     });
 
     return {

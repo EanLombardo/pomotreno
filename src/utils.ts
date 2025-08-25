@@ -22,17 +22,17 @@ export function formatDuration(duration: number): string {
   }
 }
 
-export function colorForName(name : string) : string {
-    let hash = 0;
-    for (let i = 0; i < name.length; i++) {
-        hash = name.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    const h = hash % 360;
-    return `hsl(${h}, 80%, 50%)`;
+export function colorForName(name: string): string {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const h = hash % 360;
+  return `hsl(${h}, 80%, 50%)`;
 }
 
 
-export function formatTime(time :number, includeDate: boolean = false) : string {
+export function formatTime(time: number, includeDate: boolean = false): string {
   const date = new Date(time);
   if (includeDate) {
     return date.toLocaleString([], { hour: '2-digit', minute: '2-digit', year: 'numeric', month: '2-digit', day: '2-digit' });

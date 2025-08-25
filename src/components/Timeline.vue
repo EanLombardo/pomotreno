@@ -14,7 +14,8 @@
         </div>
         <div class="flex items-center" v-if="span.type === 'paused'">
           <div class="basis-1/3 text-end m-2">{{ span.formattedDuration }}</div>
-          <div class="grow basis-2/3 rounded-xl p-2 opacity-50" v-bind:style="span.style.value">{{ span.name }} (Paused)</div>
+          <div class="grow basis-2/3 rounded-xl p-2 opacity-50" v-bind:style="span.style.value">{{ span.name }} (Paused)
+          </div>
         </div>
         <div class="flex items-center" v-bind:style="span.style.value" v-if="span.type === 'gap'">
           <div class="grow text-center">{{ span.formattedDuration }}</div>
@@ -101,12 +102,12 @@ export class TimelineSpan {
   }
 
   get formattedStart() {
-    if(this.includeDate) {
+    if (this.includeDate) {
       return formatTime(this.start, true);
     }
     return formatTime(this.start);
   }
-} 
+}
 
 export default defineComponent({
   name: 'SpanTable',
@@ -121,10 +122,10 @@ export default defineComponent({
       let filteredSpans = db.timeSpansInRange.value;
 
       const spans: TimelineSpan[] = [];
-      for(let i=0; i < filteredSpans.length; i++) {
+      for (let i = 0; i < filteredSpans.length; i++) {
         const currSpan = filteredSpans[i]
         let includeDate = false;
-        if(i == 0) {
+        if (i == 0) {
           includeDate = true;
         } else {
           const prevSpan = filteredSpans[i - 1];
@@ -136,7 +137,7 @@ export default defineComponent({
         }
         spans.push(TimelineSpan.fromSpanModel(currSpan as TimeSpan, includeDate));
 
-        if(i < filteredSpans.length - 1) {
+        if (i < filteredSpans.length - 1) {
           const nextSpan = filteredSpans[i + 1];
           if (nextSpan.start != currSpan.end) {
             spans.push(TimelineSpan.gap(currSpan.end, nextSpan.start, includeDate));

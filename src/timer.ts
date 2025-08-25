@@ -14,9 +14,9 @@ video.addEventListener('leavepictureinpicture', () => {
 addEventListener('unload', async () => await timer.stop());
 addEventListener('beforeunload', async (event) => {
     if (timer.state.value !== 'stopped') {
-    event.preventDefault();
-    event.returnValue = true;
-    await timer.pause();
+        event.preventDefault();
+        event.returnValue = true;
+        await timer.pause();
     }
 });
 addEventListener('pagehide', async () => await timer.stop());
@@ -37,7 +37,7 @@ export class timer {
     static state = ref<State>("stopped");
     static mode = ref<Mode>("stopwatch");
 
-    static async start(name : string, mode : Mode, duration: number | null) {
+    static async start(name: string, mode: Mode, duration: number | null) {
         this.startTime.value = Date.now();
         this.unpauseTime.value = Date.now();
         this.timerName.value = name;
@@ -49,8 +49,8 @@ export class timer {
         this.pauseTime.value = 0;
 
         navigator.mediaSession.metadata = new MediaMetadata({
-          title: name,
-          artist: 'Pomotreno'
+            title: name,
+            artist: 'Pomotreno'
         });
 
         navigator.mediaSession.setActionHandler('play', () => this.pauseResume());
@@ -77,7 +77,7 @@ export class timer {
     static async pauseResume() {
         if (this.state.value === "paused") {
             await this.resume();
-        } else if(this.state.value === "running") {
+        } else if (this.state.value === "running") {
             await this.pause();
         }
     }
@@ -85,10 +85,10 @@ export class timer {
     static async stop() {
         if (this.state.value === "stopped") return;
 
-        if(this.state.value === "running") {
-           await db.addTimeSpan(this.timerName.value, 'running', this.startTime.value + this.elapsedPauseTime.value, Date.now());
-        } else  if(this.state.value === "paused") {
-           await db.addTimeSpan(this.timerName.value, 'paused', this.pauseTime.value, Date.now());
+        if (this.state.value === "running") {
+            await db.addTimeSpan(this.timerName.value, 'running', this.startTime.value + this.elapsedPauseTime.value, Date.now());
+        } else if (this.state.value === "paused") {
+            await db.addTimeSpan(this.timerName.value, 'paused', this.pauseTime.value, Date.now());
         }
         try {
             await document.exitPictureInPicture();
@@ -99,29 +99,29 @@ export class timer {
     }
 
     static async finished() {
-        if(this.state.value === "running") {
-           await db.addTimeSpan(this.timerName.value, 'running', this.startTime.value + this.elapsedPauseTime.value, Date.now());
-        } else  if(this.state.value === "paused") {
-           await db.addTimeSpan(this.timerName.value, 'paused', this.pauseTime.value, Date.now());
+        if (this.state.value === "running") {
+            await db.addTimeSpan(this.timerName.value, 'running', this.startTime.value + this.elapsedPauseTime.value, Date.now());
+        } else if (this.state.value === "paused") {
+            await db.addTimeSpan(this.timerName.value, 'paused', this.pauseTime.value, Date.now());
         }
         this.state.value = "finished";
     }
 
     // Gets how much time has elapsed by the provided time
-    static elapsedTimeAt(time : number) : number {
-        if(this.state.value === "running") {
+    static elapsedTimeAt(time: number): number {
+        if (this.state.value === "running") {
             return time - this.startTime.value - this.elapsedPauseTime.value;
         }
-        if(this.state.value === "finished") {
+        if (this.state.value === "finished") {
             return this.duration.value!;
         }
-        if(this.state.value === "paused") {
+        if (this.state.value === "paused") {
             return this.pauseTime.value - this.startTime.value - this.elapsedPauseTime.value;
         }
         return 0;
     }
 
-    static remainingTimeAt(time: number) : number | null {
+    static remainingTimeAt(time: number): number | null {
         if (this.duration.value !== null) {
             return this.duration.value - this.elapsedTimeAt(time);
         }

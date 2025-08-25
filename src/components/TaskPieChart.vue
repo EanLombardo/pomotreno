@@ -4,7 +4,7 @@
       <h2 class="text-lg font-semibold">Total Duration: {{ formatDuration(fullTotalDuration) }}</h2>
     </template>
     <template #content>
-      <Chart type="pie" :options="chartOptions" :data="chartData" class="w-full md:w-[30rem]"/>
+      <Chart type="pie" :options="chartOptions" :data="chartData" class="w-full md:w-[30rem]" />
     </template>
   </Card>
 </template>
@@ -25,7 +25,7 @@ export default defineComponent({
   setup() {
     const fullTotalDuration = computed(() => {
       return db.tasksInRange.value.reduce((total, task) => {
-        return total + task.unpausedDurationInRange.value;
+        return total + task.unpausedDurationInRange;
       }, 0);
     });
 
@@ -37,7 +37,7 @@ export default defineComponent({
         },
         tooltip: {
           callbacks: {
-            label: (context : any) => {
+            label: (context: any) => {
               const value = formatDuration(context.raw || 0);
               return `${value}`;
             },

@@ -4,7 +4,7 @@ import { children, field, relation, text } from '@nozbe/watermelondb/decorators'
 import { Associations } from '@nozbe/watermelondb/Model'
 import { computed, Ref, ref } from 'vue'
 import { from, useObservable } from '@vueuse/rxjs'
-import { combineLatest, of, switchMap, tap } from 'rxjs'
+import { combineLatest, of, switchMap } from 'rxjs'
 import { colorForName } from './utils'
 
 export type TimeSpanType = 'paused' | 'running';

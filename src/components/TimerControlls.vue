@@ -1,15 +1,18 @@
 <template v-if="state !== 'stopped'">
-  <div class="flex m-2" style="border: 1px solid var(--p-menu-border-color); border-radius: var(--p-menu-border-radius);">
-    <Button size="small" icon="pi pi-play" v-if="state === 'paused'" @click="play" style="flex-shrink: 0;"/>
-    <Button size="small" icon="pi pi-pause" v-if="state === 'running'" @click="pause" style="flex-shrink: 0;"/>
-    <div ref="marqueeTextContainer" class="flex-grow flex items-center justify-center text-lg" style="overflow: hidden; min-width: 0;">
-      <div ref="marqueeText" :class="{ 'animate-marquee': shouldAnimateMarquee }" class="marquee-text">{{ timerName }}</div>
+  <div class="flex m-2"
+    style="border: 1px solid var(--p-menu-border-color); border-radius: var(--p-menu-border-radius);">
+    <Button size="small" icon="pi pi-play" v-if="state === 'paused'" @click="play" style="flex-shrink: 0;" />
+    <Button size="small" icon="pi pi-pause" v-if="state === 'running'" @click="pause" style="flex-shrink: 0;" />
+    <div ref="marqueeTextContainer" class="flex-grow flex items-center justify-center text-lg"
+      style="overflow: hidden; min-width: 0;">
+      <div ref="marqueeText" :class="{ 'animate-marquee': shouldAnimateMarquee }" class="marquee-text">{{ timerName }}
+      </div>
     </div>
-    <Button size="small" icon="pi pi-stop" @click="stopTimer" severity="danger" style="flex-shrink: 0;"/>
+    <Button size="small" icon="pi pi-stop" @click="stopTimer" severity="danger" style="flex-shrink: 0;" />
   </div>
 </template>
 
-<script lang="ts">  
+<script lang="ts">
 import { defineComponent, onMounted, watch, ref, nextTick, useTemplateRef } from 'vue';
 import Card from 'primevue/card';
 import Button from 'primevue/button';
@@ -127,7 +130,12 @@ export default defineComponent({
 }
 
 @keyframes marquee {
-  0% { transform: translateX(100%); }
-  100% { transform: translateX(-100%); }
+  0% {
+    transform: translateX(100%);
+  }
+
+  100% {
+    transform: translateX(-100%);
+  }
 }
 </style>

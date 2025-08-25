@@ -3,17 +3,21 @@
     <div class="grid grid-cols-1 gap-4">
       <div class="col-span-1">
         <FloatLabel variant="in" class="w-full">
-          <AutoComplete class="w-full" id="timer-name" v-model="timerName" :suggestions="filteredTimerNames" @complete="searchTimerNames" dropdown/>
+          <AutoComplete class="w-full" id="timer-name" v-model="timerName" :suggestions="filteredTimerNames"
+            @complete="searchTimerNames" dropdown />
           <label for="timer-name">Timer Name</label>
         </FloatLabel>
       </div>
       <SelectButton class="col-span-1 flex justify-center" v-model="timerType" :options="typeOptions" />
       <div class="col-span-1 flex justify-center items-center" v-if="timerType === 'countdown'">
-        <InputNumber id="timer-hours" v-model="timerHours" showButtons buttonLayout="vertical" mode="decimal" :min="0" style="width: 3rem"/>
+        <InputNumber id="timer-hours" v-model="timerHours" showButtons buttonLayout="vertical" mode="decimal" :min="0"
+          style="width: 3rem" />
         <span class="grow flex justify-center" style="font-size: 1rem;">h</span>
-        <InputNumber id="timer-minutes" v-model="timerMinutes" showButtons buttonLayout="vertical" mode="decimal" :min="0" :max="59" style="width: 3rem"/>
+        <InputNumber id="timer-minutes" v-model="timerMinutes" showButtons buttonLayout="vertical" mode="decimal"
+          :min="0" :max="59" style="width: 3rem" />
         <span class="grow flex justify-center" style="font-size: 1rem;">m</span>
-        <InputNumber id="timer-seconds" v-model="timerSeconds" showButtons buttonLayout="vertical" mode="decimal" :min="0" :max="59" style="width: 3rem"/>
+        <InputNumber id="timer-seconds" v-model="timerSeconds" showButtons buttonLayout="vertical" mode="decimal"
+          :min="0" :max="59" style="width: 3rem" />
         <span class="grow flex justify-center" style="font-size: 1rem;">s</span>
       </div>
     </div>
@@ -57,7 +61,7 @@ export default defineComponent({
     const timerHours = ref(0);
     const timerMinutes = ref(25);
     const timerSeconds = ref(0);
-    const typeOptions : Mode[] = ['stopwatch', 'countdown'];
+    const typeOptions: Mode[] = ['stopwatch', 'countdown'];
     const timerType = ref(typeOptions[0]);
     const filteredTimerNames = ref<string[]>([]);
 
@@ -72,7 +76,7 @@ export default defineComponent({
       }
     }
 
-    function getDuration() : number {
+    function getDuration(): number {
       return ((timerHours.value * 3600) + (timerMinutes.value * 60) + timerSeconds.value) * 1000;
     }
 

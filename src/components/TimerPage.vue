@@ -29,7 +29,7 @@ export default defineComponent({
     TaskPage,
   },
   setup() {
-    function start({ name, type, duration }: { name: string, type: Mode, duration: number}) {
+    function start({ name, type, duration }: { name: string, type: Mode, duration: number }) {
       timer.start(name, type, duration);
       const video = document.getElementById('pip-video') as HTMLVideoElement;
       const canvas = document.getElementById('timer-canvas') as HTMLCanvasElement;
