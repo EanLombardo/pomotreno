@@ -24,8 +24,8 @@ export default defineComponent({
   },
   setup() {
     const fullTotalDuration = computed(() => {
-      return db.tasks.value.reduce((total, task) => {
-        return total + task.unpausedDuration;
+      return db.tasksInRange.value.reduce((total, task) => {
+        return total + task.unpausedDurationInRange.value;
       }, 0);
     });
 
@@ -47,14 +47,14 @@ export default defineComponent({
     });
 
     const chartData = computed<object>(() => {
-      const labels = db.tasks.value.map(task => task.name);
-      const data = db.tasks.value.map(task => task.unpausedDuration);
+      const labels = db.tasksInRange.value.map(task => task.name);
+      const data = db.tasksInRange.value.map(task => task.unpausedDurationInRange);
       return {
         labels,
         datasets: [{
           label: 'Total Duration',
           data,
-          backgroundColor: db.tasks.value.map(task => task.color),
+          backgroundColor: db.tasksInRange.value.map(task => task.color),
           borderColor: 'black',
           borderWidth: 1,
         }]

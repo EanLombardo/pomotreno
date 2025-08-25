@@ -7,7 +7,7 @@
         </div>
         <span class="flex justify-center text-2xl mb-4">Pomotreno</span>
         <div style="max-width: 200px; overflow: hidden; flex-shrink: 1; min-width: 0;">
-          <ActiveTimerCard v-show="state !== 'stopped'" />
+          <TimerControlls v-show="state !== 'stopped'" />
         </div>
       </template>
     </Menu>

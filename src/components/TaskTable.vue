@@ -15,7 +15,7 @@
         <Column field="name" header="Task Name" sortable></Column>
         <Column field="unpausedDuration" header="Total Duration" sortable>
           <template #body="slotProps">
-            {{ formatDuration(slotProps.data.unpausedDuration) }}
+            {{ formatDuration(slotProps.data.unpausedDurationInRange) }}
           </template>
         </Column>
       </DataTable>
@@ -53,8 +53,8 @@ export default defineComponent({
 
     function exportToClipboard() {
       let yaml = 'tasks: \n'
-      for(let task of db.tasks.value) {
-        yaml += `  - name: "${task.name}"\n    totalDuration: ${task.unpausedDuration}\n`
+      for(let task of db.tasksInRange.value) {
+        yaml += `  - name: "${task.name}"\n    totalDuration: ${task.unpausedDurationInRange}\n`
       }
       navigator.clipboard.writeText(yaml).then(() => {
         console.log('YAML copied to clipboard');
@@ -62,7 +62,7 @@ export default defineComponent({
     }
 
     return {
-      tasks: db.tasks,
+      tasks: db.tasksInRange,
       selectedTasks,
       formatDuration,
       deleteSelected,

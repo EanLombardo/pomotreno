@@ -62,7 +62,7 @@ export default defineComponent({
     const filteredTimerNames = ref<string[]>([]);
 
     function searchTimerNames(event: { query: string }) {
-      const allTimerNames = db.tasks.value.map(t => t.name);
+      const allTimerNames = db.allTasks.value.map(t => t.name);
       if (!event.query.trim().length) {
         filteredTimerNames.value = [...allTimerNames];
       } else {

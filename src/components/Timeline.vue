@@ -10,13 +10,13 @@
 
         <div class="flex items-center" v-if="span.type === 'running'">
           <div class="basis-1/3 text-end m-2">{{ span.formattedDuration }}</div>
-          <div class="grow basis-2/3 rounded-xl p-2" v-bind:style="span.style">{{ span.name }}</div>
+          <div class="grow basis-2/3 rounded-xl p-2" v-bind:style="span.style.value">{{ span.name }}</div>
         </div>
         <div class="flex items-center" v-if="span.type === 'paused'">
           <div class="basis-1/3 text-end m-2">{{ span.formattedDuration }}</div>
-          <div class="grow basis-2/3 rounded-xl p-2 opacity-50" v-bind:style="span.style">{{ span.name }} (Paused)</div>
+          <div class="grow basis-2/3 rounded-xl p-2 opacity-50" v-bind:style="span.style.value">{{ span.name }} (Paused)</div>
         </div>
-        <div class="flex items-center" v-bind:style="span.style" v-if="span.type === 'gap'">
+        <div class="flex items-center" v-bind:style="span.style.value" v-if="span.type === 'gap'">
           <div class="grow text-center">{{ span.formattedDuration }}</div>
         </div>
       </div>
@@ -25,13 +25,15 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, computed } from 'vue';
+import { defineComponent, computed, Ref } from 'vue';
 import Card from 'primevue/card';
 import DataTable from 'primevue/datatable';
 import ToggleSwitch from 'primevue/toggleswitch';
 import Column from 'primevue/column';
-import { db, SpanModel } from '@/db';
+import { db, TimeSpan } from '@/db';
 import { formatDuration, formatTime, colorForName } from '@/utils';
+import { map } from 'rxjs';
+import { useObservable } from '@vueuse/rxjs';
 
 const minHeightRem = 2;
 const heightPerMinRem = 0.2;
@@ -40,14 +42,14 @@ const maxHeightRem = 20;
 export type TimelineSpanType = "running" | "paused" | "gap";
 
 export class TimelineSpan {
-  name: string | null;
+  name: Readonly<Ref<string>> | null;
   start: number;
   duration: number;
   type: TimelineSpanType;
   includeDate: boolean;
 
   private constructor(
-    name: string | null,
+    name: Readonly<Ref<string>> | null,
     start: number,
     duration: number,
     type: TimelineSpanType,
@@ -60,12 +62,12 @@ export class TimelineSpan {
     this.type = type;
   }
 
-  static fromSpanModel(span: SpanModel, includeDate: boolean): TimelineSpan {
+  static fromSpanModel(span: TimeSpan, includeDate: boolean): TimelineSpan {
     return new TimelineSpan(
-      span.task ? span.task.name : null,
-      span.span.start,
-      span.span.duration,
-      span.span.type,
+      useObservable(span.task.observe().pipe(map(task => task.name))),
+      span.start,
+      span.duration,
+      span.type,
       includeDate
     );
   }
@@ -86,10 +88,12 @@ export class TimelineSpan {
   }
 
   get style() {
-    return {
-      backgroundColor: this.name === null ? 'transparent' : colorForName(this.name),
-      height: this.height,
-    };
+    return computed(() => {
+      return {
+        backgroundColor: this.name?.value ? colorForName(this.name.value) : 'transparent',
+        height: this.height,
+      };
+    });
   }
 
   get formattedDuration() {
@@ -114,7 +118,7 @@ export default defineComponent({
   },
   setup() {
     const spans = computed<TimelineSpan[]>(() => {
-      let filteredSpans = db.spans.value;
+      let filteredSpans = db.timeSpansInRange.value;
 
       const spans: TimelineSpan[] = [];
       for(let i=0; i < filteredSpans.length; i++) {
@@ -124,18 +128,18 @@ export default defineComponent({
           includeDate = true;
         } else {
           const prevSpan = filteredSpans[i - 1];
-          const prevDate = new Date(prevSpan.span.start).toDateString();
-          const currDate = new Date(currSpan.span.start).toDateString();
+          const prevDate = new Date(prevSpan.start).toDateString();
+          const currDate = new Date(currSpan.start).toDateString();
           if (prevDate != currDate) {
             includeDate = true;
           }
         }
-        spans.push(TimelineSpan.fromSpanModel(currSpan, includeDate));
+        spans.push(TimelineSpan.fromSpanModel(currSpan as TimeSpan, includeDate));
 
         if(i < filteredSpans.length - 1) {
           const nextSpan = filteredSpans[i + 1];
-          if (nextSpan.span.start != currSpan.span.end) {
-            spans.push(TimelineSpan.gap(currSpan.span.end, nextSpan.span.start, includeDate));
+          if (nextSpan.start != currSpan.end) {
+            spans.push(TimelineSpan.gap(currSpan.end, nextSpan.start, includeDate));
           }
         }
       }

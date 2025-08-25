@@ -11,16 +11,22 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@nozbe/watermelondb": "^0.28.0",
     "@primeuix/themes": "^1.2.3",
     "@tailwindcss/vite": "^4.1.12",
+    "@vueuse/rxjs": "^13.7.0",
     "chart.js": "^4.5.0",
     "primeicons": "^7.0.0",
     "primevue": "^4.3.7",
+    "rxjs": "^7.8.2",
     "tailwindcss": "^4.1.12",
     "tailwindcss-primeui": "^0.6.1",
     "vue": "^3.5.18"
   },
   "devDependencies": {
+    "@babel/plugin-proposal-class-properties": "^7.18.6",
+    "@babel/plugin-proposal-decorators": "^7.28.0",
+    "@babel/plugin-transform-runtime": "^7.28.3",
     "@crxjs/vite-plugin": "^2.2.0",
     "@types/chrome": "^0.1.4",
     "@types/node": "^24.0.15",

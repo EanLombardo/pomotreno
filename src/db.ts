@@ -1,126 +1,185 @@
-import { computed, ref } from 'vue';
-import { colorForName } from './utils';
+import { appSchema, tableSchema, Model, Database, Relation, Q, Query } from '@nozbe/watermelondb'
+import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs'
+import { children, field, relation, text } from '@nozbe/watermelondb/decorators'
+import { Associations } from '@nozbe/watermelondb/Model'
+import { computed, Ref, ref } from 'vue'
+import { from, useObservable } from '@vueuse/rxjs'
+import { combineLatest, of, switchMap, tap } from 'rxjs'
+import { colorForName } from './utils'
 
 export type TimeSpanType = 'paused' | 'running';
 
-export class TimeSpan {
-    type: TimeSpanType;
-    readonly start: number;
-    readonly end: number;
-
-    constructor(type: TimeSpanType, start: number, end: number) {
-        this.type = type;
-        this.start = start;
-        this.end = end;
+export class Task extends Model {
+    static table = 'tasks'
+    static associations: Associations = {
+        time_spans: { type: 'has_many', foreignKey: 'task_id' }
     }
+
+    @text('name') name!: string
+    @children('time_spans') timeSpans!: Query<TimeSpan>
+
+    timeSpansInRange: Readonly<Ref<TimeSpan[]>> =
+        useObservable(combineLatest([from(db.from, { immediate: true }), from(db.to, { immediate: true })]).pipe(
+            switchMap(([fromValue, toValue]) => {
+                const clauses: Q.Clause[] = [];
+                if (fromValue !== null) {
+                    clauses.push(Q.where('start', Q.gte(fromValue)));
+                }
+                if (toValue !== null) {
+                    clauses.push(Q.where('start', Q.lte(toValue)));
+                }
+                return this.timeSpans.extend(...clauses).observe();
+            })
+        ), { initialValue: [] });
+
+    unpausedDurationInRange = computed<number>(() => {
+        let t = this.timeSpansInRange.value.reduce((total, span) => {
+            if (span.type === 'paused') {
+                return total;
+            }
+            return total + span.duration;
+        }, 0);
+        return t;
+    });
+
+    get color(): string {
+        return this.name ? colorForName(this.name) : 'transparent';
+    }
+}
+
+export class TimeSpan extends Model {
+    static table = 'time_spans'
+    static associations: Associations = {
+        tasks: { type: 'belongs_to', key: 'task_id' }
+    }
+
+    @field('start') start!: number
+    @field('end') end!: number
+    @field('type') type!: TimeSpanType
+    @relation('tasks', 'task_id') task!: Relation<Task>
 
     get duration(): number {
         return this.end - this.start;
     }
 }
 
-export class Task {
-    name: string;
-    spans: TimeSpan[];
-    color: string;
-
-    constructor(name: string) {
-        this.name = name;
-        this.spans = [];
-        this.color = colorForName(name);
-    }
-
-    addSpan(span: TimeSpan) {
-        this.spans.push(span);
-    }
-
-    get startTime(): number | null {
-        return this.spans[0]?.start || null;
-    }
-
-    get endTime(): number | null {
-        return this.spans[this.spans.length - 1]?.end || null;
-    }
-
-    get unpausedDuration(): number {
-        return this.spans.reduce((total, span) => {
-            if (span.type === 'running') {
-                total += span.duration;
-            }
-            return total;
-        }, 0);
-    }
-}
-
-export type SpanModel = {
-    span : TimeSpan,
-    task : Task,
-}
-
 export class db {
-    static tasks = ref<Task[]>([]);
-    static spans = computed<SpanModel[]>(() => {
-        const result = db.tasks.value.flatMap(task => {
-            return task.spans.map(span => {
-                return { span, task };
-            });
-        });
-        result.sort((a, b) => a.span.start - b.span.start);
-        return result;
-    });
-    static storageUsedBytes = ref(0)
-    static storageUsageRatio = computed(() => {
-        return this.storageUsedBytes.value / chrome.storage.sync.QUOTA_BYTES
-    });
+    static database = new Database({
+        adapter: new LokiJSAdapter({
+            schema: appSchema({
+                version: 1,
+                tables: [
+                    tableSchema({
+                        name: 'tasks',
+                        columns: [
+                            { name: 'name', type: 'string', isIndexed: true },
+                        ]
+                    }),
+                    tableSchema({
+                        name: 'time_spans',
+                        columns: [
+                            { name: 'start', type: 'number', isIndexed: true },
+                            { name: 'end', type: 'number', },
+                            { name: 'type', type: 'string' },
+                            { name: 'task_id', type: 'string', isIndexed: true },
+                        ]
+                    }),
+                ]
+            }),
+            useWebWorker: false,
+            useIncrementalIndexedDB: true,
+        }),
+        modelClasses: [
+            Task,
+            TimeSpan
+        ],
+    })
 
-    static async addTimeSpan(name : string, span: TimeSpan) {
-        chrome.storage.sync.get('tasks', (result: { [key: string]: any; }) => {
-            if (!result.tasks) {
-                result.tasks = {};
+    static from = ref<number | null>(null);
+    static to = ref<number | null>(null);
+    static timeSpansInRange: Readonly<Ref<TimeSpan[]>> = useObservable(combineLatest([from(this.from, { immediate: true }), from(this.to, { immediate: true })]).pipe(
+        switchMap(([fromValue, toValue]) => {
+            const clauses: Q.Clause[] = [];
+            if (fromValue !== null) {
+                clauses.push(Q.where('start', Q.gte(fromValue)));
             }
-            const task = result.tasks[name];
-            if (!task) {
-                const newTask = new Task(name);
-                newTask.spans.push(span);
-                result.tasks[name] = newTask;
+            if (toValue !== null) {
+                clauses.push(Q.where('start', Q.lte(toValue)));
+            }
+            return this.database.get<TimeSpan>('time_spans').query(...clauses).observe();
+        })),
+        { initialValue: [] }
+    );
+
+    static tasksInRange: Readonly<Ref<Task[]>> = useObservable(from(this.timeSpansInRange, { immediate: true }).pipe(
+        switchMap(timeSpans => {
+            if (timeSpans.length === 0) {
+                return of([] as Task[]);
+            }
+            const taskIds = [...new Set(timeSpans.map(ts => ts.task.id))];
+            if (taskIds.length === 0) {
+                return of([] as Task[]);
+            }
+            return this.database.get<Task>('tasks').query(Q.where('id', Q.oneOf(taskIds))).observe();
+        })
+    ), { initialValue: [] });
+
+    static allTasks: Readonly<Ref<Task[]>> = useObservable(this.database.get<Task>('tasks').query().observe(), { initialValue: [] });
+    static allSpans: Readonly<Ref<TimeSpan[]>> = useObservable(this.database.get<TimeSpan>('time_spans').query().observe(), { initialValue: [] });
+
+    static async addTimeSpan(name: string, type: TimeSpanType, start: number, end: number): Promise<void> {
+        await this.database.write(async () => {
+            const tasksCollection = this.database.get<Task>('tasks');
+            const timeSpansCollection = this.database.get<TimeSpan>('time_spans');
+
+            const existingTasks = await tasksCollection.query(Q.where('name', name)).fetch();
+            let task: Task;
+
+            if (existingTasks.length > 0) {
+                task = existingTasks[0];
             } else {
-                task?.spans.push(span);
+                task = await tasksCollection.create(_task => {
+                    _task.name = name;
+                });
             }
-            const updated = { tasks: result.tasks };
-            chrome.storage.sync.set(updated);
-            this.populateInternal(updated);
-        });
-    }
 
-    static populateInternal(result: { [key: string]: any; }) {
-        this.tasks.value = [];
-       if (result.tasks) {
-            Object.keys(result.tasks).forEach((taskName) => {
-                const task = new Task(taskName);
-                task.spans = result.tasks[taskName].spans.map((s: any) => new TimeSpan(s.type, s.start, s.end));
-                task.spans.sort((a, b) => a.start - b.start);
-                this.tasks.value.push(task);
+            await timeSpansCollection.create(timeSpan => {
+                timeSpan.start = start;
+                timeSpan.end = end;
+                timeSpan.type = type;
+                timeSpan.task.id = task.id;
             });
-            this.tasks.value.sort((a, b) => a.startTime! - b.startTime!);
-        }
+        });
     }
 
-    static async populate() {
-         chrome.storage.sync.get('tasks', (result: { [key: string]: any; }) => {
-            this.populateInternal(result);
-        });
-        this.populateStorageUsage()
-    }
-
-    static async populateStorageUsage() {
-        chrome.storage.sync.getBytesInUse(null, (bytesInUse) => {
-            this.storageUsedBytes.value = bytesInUse;
-        });
+    static {
+        // const tasksInRange$ = combineLatest([from(this.from), from(this.to)]).pipe(
+        //     switchMap(([fromValue, toValue]) => {
+        //         const clauses: Q.Clause[] = [];
+        //         if (fromValue !== null) {
+        //             clauses.push(Q.where('start', Q.gte(fromValue)));
+        //         }
+        //         if (toValue !== null) {
+        //             clauses.push(Q.where('start', Q.lte(toValue)));
+        //         }
+        //         return this.database.get<TimeSpan>('time_spans').query(...clauses).observe();
+        //     }),
+        //     tap(timeSpans => {
+        //         this.timeSpansInRange.value = timeSpans;
+        //     }),
+        //     switchMap(timeSpans => {
+        //         if (timeSpans.length === 0) {
+        //             return of([] as Task[]);
+        //         }
+        //         const taskIds = [...new Set(timeSpans.map(ts => ts.task.id))];
+        //         if (taskIds.length === 0) {
+        //             return of([] as Task[]);
+        //         }
+        //         return this.database.get<Task>('tasks').query(Q.where('id', Q.oneOf(taskIds))).observe();
+        //     })
+        // );
+        // tasksInRange$.subscribe((tasks) => {
+        //     this.tasksInRange.value = tasks;
+        // });
     }
 }
-
-chrome.storage.sync.onChanged.addListener((changes: { [key: string]: any }) => {
-    db.populateInternal({tasks : changes.tasks.newValue});
-    db.populateStorageUsage();
-});
-db.populate();

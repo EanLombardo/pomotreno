@@ -1,6 +1,6 @@
 
 import { ref } from 'vue';
-import { db, TimeSpan } from './db';
+import { db } from './db';
 
 const video = document.getElementById('pip-video') as HTMLVideoElement;
 video.addEventListener('loadedmetadata', () => {
@@ -63,7 +63,7 @@ export class timer {
         if (this.state.value !== "running") return;
         this.pauseTime.value = Date.now();
         this.state.value = "paused";
-        await db.addTimeSpan(this.timerName.value, new TimeSpan('running', this.unpauseTime.value, this.pauseTime.value));
+        await db.addTimeSpan(this.timerName.value, 'running', this.unpauseTime.value, this.pauseTime.value);
     }
 
     static async resume() {
@@ -71,7 +71,7 @@ export class timer {
         this.unpauseTime.value = Date.now();
         this.elapsedPauseTime.value += this.unpauseTime.value - this.pauseTime.value;
         this.state.value = "running";
-        await db.addTimeSpan(this.timerName.value, new TimeSpan('paused', this.pauseTime.value, this.unpauseTime.value));
+        await db.addTimeSpan(this.timerName.value, 'paused', this.pauseTime.value, this.unpauseTime.value);
     }
 
     static async pauseResume() {
@@ -86,9 +86,9 @@ export class timer {
         if (this.state.value === "stopped") return;
 
         if(this.state.value === "running") {
-           await db.addTimeSpan(this.timerName.value, new TimeSpan('running', this.startTime.value + this.elapsedPauseTime.value, Date.now()));
+           await db.addTimeSpan(this.timerName.value, 'running', this.startTime.value + this.elapsedPauseTime.value, Date.now());
         } else  if(this.state.value === "paused") {
-           await db.addTimeSpan(this.timerName.value, new TimeSpan('paused', this.pauseTime.value, Date.now()));
+           await db.addTimeSpan(this.timerName.value, 'paused', this.pauseTime.value, Date.now());
         }
         try {
             await document.exitPictureInPicture();
@@ -100,9 +100,9 @@ export class timer {
 
     static async finished() {
         if(this.state.value === "running") {
-           await db.addTimeSpan(this.timerName.value, new TimeSpan('running', this.startTime.value + this.elapsedPauseTime.value, Date.now()));
+           await db.addTimeSpan(this.timerName.value, 'running', this.startTime.value + this.elapsedPauseTime.value, Date.now());
         } else  if(this.state.value === "paused") {
-           await db.addTimeSpan(this.timerName.value, new TimeSpan('paused', this.pauseTime.value, Date.now()));
+           await db.addTimeSpan(this.timerName.value, 'paused', this.pauseTime.value, Date.now());
         }
         this.state.value = "finished";
     }
