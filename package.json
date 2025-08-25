@@ -27,14 +27,12 @@
     "@babel/plugin-proposal-class-properties": "^7.18.6",
     "@babel/plugin-proposal-decorators": "^7.28.0",
     "@babel/plugin-transform-runtime": "^7.28.3",
-    "@crxjs/vite-plugin": "^2.2.0",
     "@types/chrome": "^0.1.4",
     "@types/node": "^24.0.15",
     "@vitejs/plugin-vue": "~6.0.1",
     "@vue/tsconfig": "^0.7.0",
     "typescript": "~5.9",
     "vite": "^7.1.3",
-    "vite-plugin-zip-pack": "^1.2.4",
     "vue-tsc": "^3.0.3"
   }
 }
