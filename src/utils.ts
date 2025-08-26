@@ -31,6 +31,13 @@ export function colorForName(name: string): string {
   return `hsl(${h}, 80%, 50%)`;
 }
 
+export function sameDay(a: number, b: number): boolean {
+  const dateA = new Date(a);
+  const dateB = new Date(b);
+  return dateA.getFullYear() === dateB.getFullYear() &&
+    dateA.getMonth() === dateB.getMonth() &&
+    dateA.getDate() === dateB.getDate();
+}
 
 export function formatTime(time: number, includeDate: boolean = false): string {
   const date = new Date(time);

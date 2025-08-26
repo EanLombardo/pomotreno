@@ -28,7 +28,7 @@ export class Task extends Model {
                 if (toValue !== null) {
                     clauses.push(Q.where('start', Q.lte(toValue)));
                 }
-                return this.timeSpans.extend(...clauses).observe();
+                return this.timeSpans.extend(...clauses, Q.sortBy('start', 'asc')).observe();
             })
         ), { initialValue: [] });
 
@@ -106,7 +106,7 @@ export class db {
             if (toValue !== null) {
                 clauses.push(Q.where('start', Q.lte(toValue)));
             }
-            return this.database.get<TimeSpan>('time_spans').query(...clauses).observe();
+            return this.database.get<TimeSpan>('time_spans').query(...clauses, Q.sortBy('start', 'asc')).observe();
         })),
         { initialValue: [] }
     );

@@ -35,6 +35,7 @@ import { db, TimeSpan } from '@/db';
 import { formatDuration, formatTime, colorForName } from '@/utils';
 import { map } from 'rxjs';
 import { useObservable } from '@vueuse/rxjs';
+import { sameDay } from '@/utils';
 
 const minHeightRem = 2;
 const heightPerMinRem = 0.2;
@@ -53,33 +54,30 @@ export class TimelineSpan {
     name: Readonly<Ref<string>> | null,
     start: number,
     duration: number,
-    type: TimelineSpanType,
-    includeDate: boolean
+    type: TimelineSpanType
   ) {
     this.name = name;
     this.start = start;
     this.duration = duration;
-    this.includeDate = includeDate;
+    this.includeDate = false;
     this.type = type;
   }
 
-  static fromSpanModel(span: TimeSpan, includeDate: boolean): TimelineSpan {
+  static fromSpanModel(span: TimeSpan): TimelineSpan {
     return new TimelineSpan(
       useObservable(span.task.observe().pipe(map(task => task.name))),
       span.start,
       span.duration,
       span.type,
-      includeDate
     );
   }
 
-  static gap(start: number, end: number, includeDate: boolean): TimelineSpan {
+  static gap(start: number, end: number): TimelineSpan {
     return new TimelineSpan(
       null,
       start,
       end - start,
       'gap',
-      includeDate
     );
   }
 
@@ -123,25 +121,19 @@ export default defineComponent({
 
       const spans: TimelineSpan[] = [];
       for (let i = 0; i < filteredSpans.length; i++) {
-        const currSpan = filteredSpans[i]
-        let includeDate = false;
-        if (i == 0) {
-          includeDate = true;
-        } else {
-          const prevSpan = filteredSpans[i - 1];
-          const prevDate = new Date(prevSpan.start).toDateString();
-          const currDate = new Date(currSpan.start).toDateString();
-          if (prevDate != currDate) {
-            includeDate = true;
-          }
-        }
-        spans.push(TimelineSpan.fromSpanModel(currSpan as TimeSpan, includeDate));
+        const currSpan = filteredSpans[i];
+        spans.push(TimelineSpan.fromSpanModel(currSpan as TimeSpan));
 
         if (i < filteredSpans.length - 1) {
           const nextSpan = filteredSpans[i + 1];
           if (nextSpan.start != currSpan.end) {
-            spans.push(TimelineSpan.gap(currSpan.end, nextSpan.start, includeDate));
+            spans.push(TimelineSpan.gap(currSpan.end, nextSpan.start));
           }
+        }
+      }
+      for (let i = 0; i < spans.length; i++) {
+        if (i == 0 || !sameDay(spans[i].start, spans[i - 1].start)) {
+          spans[i].includeDate = true;
         }
       }
       return spans;
