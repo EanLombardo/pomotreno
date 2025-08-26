@@ -131,6 +131,7 @@ export default defineComponent({
           }
         }
       }
+
       for (let i = 0; i < spans.length; i++) {
         if (i == 0 || !sameDay(spans[i].start, spans[i - 1].start)) {
           spans[i].includeDate = true;

@@ -85,16 +85,16 @@ export class timer {
         if (this.state.value === "stopped") return;
 
         if (this.state.value === "running") {
-            await db.addTimeSpan(this.timerName.value, 'running', this.startTime.value + this.elapsedPauseTime.value, Date.now());
+            await db.addTimeSpan(this.timerName.value, 'running', this.unpauseTime.value, Date.now());
         } else if (this.state.value === "paused") {
             await db.addTimeSpan(this.timerName.value, 'paused', this.pauseTime.value, Date.now());
         }
+        this.state.value = "stopped";
         try {
             await document.exitPictureInPicture();
         } catch (error) {
             // Only happpens when already exited
         }
-        this.state.value = "stopped";
     }
 
     static async finished() {
