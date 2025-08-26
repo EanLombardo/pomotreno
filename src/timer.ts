@@ -11,7 +11,6 @@ video.addEventListener('leavepictureinpicture', () => {
     timer.stop();
 });
 
-addEventListener('unload', async () => await timer.stop());
 addEventListener('beforeunload', async (event) => {
     if (timer.state.value !== 'stopped') {
         event.preventDefault();
