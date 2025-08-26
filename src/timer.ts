@@ -99,7 +99,7 @@ export class timer {
 
     static async finished() {
         if (this.state.value === "running") {
-            await db.addTimeSpan(this.timerName.value, 'running', this.startTime.value + this.elapsedPauseTime.value, Date.now());
+            await db.addTimeSpan(this.timerName.value, 'running', this.unpauseTime.value, Date.now());
         } else if (this.state.value === "paused") {
             await db.addTimeSpan(this.timerName.value, 'paused', this.pauseTime.value, Date.now());
         }

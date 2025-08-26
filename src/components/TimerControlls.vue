@@ -64,6 +64,10 @@ export default defineComponent({
       if (timer.mode.value === 'countdown') {
         timeToDraw = timer.remainingTimeAt(now) || 0;
         progress = (timer.duration.value! - timeToDraw) / timer.duration.value!;
+
+        if (timeToDraw <= 0 && timer.state.value === 'running') {
+          timer.finished();
+        }
       } else {
         timeToDraw = timer.elapsedTimeAt(now);
         progress = 1;
