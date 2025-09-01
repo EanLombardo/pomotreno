@@ -1,4 +1,9 @@
 <template>
+  <Toolbar class="mb-2">
+    <template #start>
+      <RangeSelector />
+    </template>
+  </Toolbar>
   <Card>
     <template #title>Timeline</template>
     <template #content>
@@ -31,11 +36,13 @@ import Card from 'primevue/card';
 import DataTable from 'primevue/datatable';
 import ToggleSwitch from 'primevue/toggleswitch';
 import Column from 'primevue/column';
+import Toolbar from 'primevue/toolbar';
 import { db, TimeSpan } from '@/db';
 import { formatDuration, formatTime, colorForName } from '@/utils';
 import { map } from 'rxjs';
 import { useObservable } from '@vueuse/rxjs';
 import { sameDay } from '@/utils';
+import RangeSelector from './RangeSelector.vue';
 
 const minHeightRem = 2;
 const heightPerMinRem = 0.2;
@@ -114,6 +121,8 @@ export default defineComponent({
     DataTable,
     Column,
     ToggleSwitch,
+    RangeSelector,
+    Toolbar
   },
   setup() {
     const spans = computed<TimelineSpan[]>(() => {

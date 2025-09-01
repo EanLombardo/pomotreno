@@ -95,8 +95,42 @@ export class db {
         ],
     })
 
-    static from = ref<number | null>(null);
-    static to = ref<number | null>(null);
+    private static today() {
+        return new Date().setHours(0, 0, 0, 0);
+    }
+
+    private static tomorrow() {
+        let d = new Date();
+        d.setDate(d.getDate() + 1);
+        return d.setHours(0, 0, 0, 0);
+    }
+
+    static from = ref<number>(this.today());
+    static to = ref<number>(this.tomorrow());
+
+    static minDate: Readonly<Ref<number>> = useObservable(this.database.get<TimeSpan>('time_spans').query(Q.sortBy('start', 'asc'), Q.take(1)).observe().pipe(
+        switchMap(spans => {
+            if (spans.length > 0) {
+                let res = new Date(spans[0].start);
+                res.setHours(0, 0, 0, 0);
+                return of(res.getTime());
+            }
+            return of(this.today());
+        })
+    ));
+
+    static maxDate: Readonly<Ref<number>> = useObservable(this.database.get<TimeSpan>('time_spans').query(Q.sortBy('start', 'desc'), Q.take(1)).observe().pipe(
+        switchMap(spans => {
+            if (spans.length > 0) {
+                let res = new Date(spans[0].start);
+                res.setDate(res.getDate() + 1);
+                res.setHours(0, 0, 0, 0);
+                return of(res.getTime());
+            }
+            return of(this.tomorrow());
+        })
+    ));
+
     static timeSpansInRange: Readonly<Ref<TimeSpan[]>> = useObservable(combineLatest([from(this.from, { immediate: true }), from(this.to, { immediate: true })]).pipe(
         switchMap(([fromValue, toValue]) => {
             const clauses: Q.Clause[] = [];
@@ -150,36 +184,5 @@ export class db {
                 timeSpan.task.id = task.id;
             });
         });
-    }
-
-    static {
-        // const tasksInRange$ = combineLatest([from(this.from), from(this.to)]).pipe(
-        //     switchMap(([fromValue, toValue]) => {
-        //         const clauses: Q.Clause[] = [];
-        //         if (fromValue !== null) {
-        //             clauses.push(Q.where('start', Q.gte(fromValue)));
-        //         }
-        //         if (toValue !== null) {
-        //             clauses.push(Q.where('start', Q.lte(toValue)));
-        //         }
-        //         return this.database.get<TimeSpan>('time_spans').query(...clauses).observe();
-        //     }),
-        //     tap(timeSpans => {
-        //         this.timeSpansInRange.value = timeSpans;
-        //     }),
-        //     switchMap(timeSpans => {
-        //         if (timeSpans.length === 0) {
-        //             return of([] as Task[]);
-        //         }
-        //         const taskIds = [...new Set(timeSpans.map(ts => ts.task.id))];
-        //         if (taskIds.length === 0) {
-        //             return of([] as Task[]);
-        //         }
-        //         return this.database.get<Task>('tasks').query(Q.where('id', Q.oneOf(taskIds))).observe();
-        //     })
-        // );
-        // tasksInRange$.subscribe((tasks) => {
-        //     this.tasksInRange.value = tasks;
-        // });
     }
 }
