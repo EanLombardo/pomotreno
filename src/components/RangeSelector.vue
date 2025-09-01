@@ -1,6 +1,6 @@
 <template>
     <FloatLabel label="Date Range" variant="on">
-        <DatePicker id="range" v-model="range" selectionMode="range" :minDate="minDate" :maxDate="maxDate" />
+        <DatePicker id="range" v-model="range" selectionMode="range" :minDate="minDate" :maxDate="maxDate" :showButtonBar="true"/>
         <label for="range">Date Range</label>
     </FloatLabel>
 </template>
