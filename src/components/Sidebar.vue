@@ -10,6 +10,16 @@
           <TimerControlls v-show="state !== 'stopped'" />
         </div>
       </template>
+      <template #end>
+        <div class="flex justify-center m-1 space-x-4">
+          <a class="github-button" href="https://github.com/EanLombardo/pomotreno/subscription"
+            data-color-scheme="no-preference: dark; light: light; dark: dark;" data-size="large"
+            aria-label="Watch EanLombardo/pomotreno on GitHub">Watch</a>
+          <a class="github-button" href="https://github.com/EanLombardo/pomotreno/issues"
+            data-color-scheme="no-preference: dark; light: light; dark: dark;" data-icon="octicon-issue-opened"
+            data-size="large" aria-label="Issue EanLombardo/pomotreno on GitHub">Issue</a>
+        </div>
+      </template>
     </Menu>
   </div>
 </template>
@@ -22,7 +32,6 @@ import { currentPath } from '@/routing';
 import { timer } from '@/timer';
 import { showNewTimerDialog } from '@/dialog';
 import TimerControlls from './TimerControlls.vue';
-import { db } from '@/db';
 
 export default defineComponent({
   name: 'Sidebar',
@@ -63,8 +72,6 @@ export default defineComponent({
       items,
       selectedIndex,
       state: timer.state,
-      storageUsageRatio: db.storageUsageRatio,
-      storageUsedBytes: db.storageUsedBytes,
     };
   },
 });
