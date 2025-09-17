@@ -6,7 +6,7 @@ Pomotreno is a Pomodoro timer application that runs entirely in your browser. It
 
 All your data is stored locally in your browser, ensuring your privacy. Pomotreno also keeps a log of your completed Pomodoro sessions, allowing you to track your productivity over time.
 
-Check out the app at: [https://eanlombardo.github.io/pomotreno/#/timeline]
+Check out the app at: https://eanlombardo.github.io/pomotreno/#/timeline
 
 ## Features
 
