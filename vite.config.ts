@@ -4,6 +4,7 @@ import { defineConfig } from 'vite'
 import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
+  base: '/pomotreno/',
   resolve: {
     alias: {
       '@': `${path.resolve(__dirname, 'src')}`,
